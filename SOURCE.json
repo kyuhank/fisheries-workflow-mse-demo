@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "baseline_repository": "https://github.com/kyuhank/fisheries-workflow-demo",
+  "baseline_commit": "b6dc067d5346d3809edf0ad66a0f6c7e7d07ce93",
+  "jobs": [
+    "mse_prepare",
+    "mse_constant",
+    "mse_index",
+    "mse_buffered",
+    "mse_summary",
+    "mse_report"
+  ],
+  "library": {
+    "path": "R/mse.R",
+    "sha256": "da8b6531e0a89950c49617e2a7b6dd485e698bab7bdef06e64632a700ef7c956",
+    "baseline_path": "workflow/r/mse.R",
+    "baseline_lines": "all"
+  }
+}
