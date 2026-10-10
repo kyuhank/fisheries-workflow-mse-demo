@@ -1,5 +1,2 @@
-# Apply index steps, the selected buffer and a 15% annual advice-change limit.
-calculate <- function(context) {
-  mse_simulate(context$parents$mse_prepare, rule = "buffered",
-               buffer = context$settings$mse_buffer)
-}
+# Deliberate actual R failure for MR-08, not a scientific model change.
+calculate <- function(context) stop("MR08 intentional Buffered simulation failure")
