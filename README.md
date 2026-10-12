@@ -1,5 +1,30 @@
-# Fisheries workflow mse example
+# Fisheries workflow MSE example
 
-This repository owns 6 of the 22 synthetic demonstration jobs. The coordinator loads this repository at an exact commit and records the actual source bytes.
+These six jobs prepare common future trials, test constant catch, an index rule
+and a buffered rule, then compare their catch, biomass and catch stability.
+The [coordinator](https://github.com/kyuhank/fisheries-workflow-demo) loads an exact
+source revision and preserves each producing record.
 
-Baseline job files and R calculation code preserve the bytes from kyuhank/fisheries-workflow-demo commit b6dc067d5346d3809edf0ad66a0f6c7e7d07ce93. Run these jobs through the coordinator in the preserved SPC container; no standalone operational fisheries assessment is implied.
+The fitted Schaefer cases are teaching inputs. In the public-data example they
+inherit an unvalidated link between the selected Fiji fleet CPUE and stock-wide
+abundance. The same saved growth and observation errors are used for all rules.
+
+Realised catch is capped at 40% of true starting biomass, a simulator guardrail
+shared by every rule. Low-biomass statistics are conditional on that safeguard;
+they do not show that a rule would be safe without it. Cases and scenarios have
+equal comparison weight, rather than estimated probabilities. The example
+provides no calibrated risk estimates or real-fishery advice.
+
+Run through the coordinator in its recorded container, for example:
+
+```sh
+make job JOB=mse_index
+```
+
+Each job receives a named `context`; its entry point is not standalone. See
+`jobs/*/README.md` for input connections. The report reads saved results without
+rerunning trials and keeps detailed metrics, assumptions and source records.
+
+[SOURCE.json](SOURCE.json) records the calculation library's baseline origin and
+SHA-256. The R library and calculation entry points retain those source bytes;
+the report and reader guides have been revised for the public-data example.
