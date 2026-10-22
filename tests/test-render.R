@@ -206,6 +206,31 @@ record$data_source <- list(provider = "Fixture provider", cpue_scope = "Fiji fle
 stopifnot(grepl(record$data_source$cpue_scope, render("cpue_a", c(list(series = rows), analysis)), fixed = TRUE),
           grepl(record$data_source$sources[[1]]$url, render("cpue_report", cpue), fixed = TRUE),
           grepl("stock-wide catches", render("assessment_report", assessment_result), fixed = TRUE))
+# Source coverage dates must not replace the actual saved-series dates.
+dated <- record
+dated$data_source$cpue_scope <- "Fiji fleet; six strata, 2000–2022"
+for (job in c("cpue_a", "cpue_b", "cpue_summary", "cpue_report")) {
+  result <- if (job %in% c("cpue_a", "cpue_b")) c(list(series = rows), analysis) else cpue
+  before <- serialize(dated, NULL)
+  text <- render(job, result, dated)
+  stopifnot(grepl("2001–2003", text, fixed = TRUE), !grepl("2000–2022", text, fixed = TRUE),
+            grepl("Fiji fleet; six strata", text, fixed = TRUE), identical(before, serialize(dated, NULL)))
+}
+# HTML has sibling file links; a PDF displayed through a blob has no sibling URL base.
+local({
+  previous <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+  on.exit(knitr::opts_knit$set(rmarkdown.pandoc.to = previous))
+  knitr::opts_knit$set(rmarkdown.pandoc.to = "typst")
+  pdf_footer <- paste(capture.output(report_record(record)), collapse = "\n")
+  stopifnot(grepl("`report-data.json`", pdf_footer, fixed = TRUE),
+            grepl("`record.json`", pdf_footer, fixed = TRUE),
+            !grepl("](report-data.json)", pdf_footer, fixed = TRUE),
+            !grepl("](record.json)", pdf_footer, fixed = TRUE))
+  knitr::opts_knit$set(rmarkdown.pandoc.to = "html")
+  html_footer <- paste(capture.output(report_record(record)), collapse = "\n")
+  stopifnot(grepl("[Saved results](report-data.json)", html_footer, fixed = TRUE),
+            grepl("[Run record](record.json)", html_footer, fixed = TRUE))
+})
 grDevices::dev.off()
 stopifnot(file.info(figure)$size > 1000)
 unlink(figure)

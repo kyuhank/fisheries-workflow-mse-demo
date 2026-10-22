@@ -319,7 +319,15 @@ report_mse <- function(result, individual = FALSE) {
 report_scope <- function(job, result, record) {
   public <- !is.null(record$data_source) && (!is.null(record$data_source$cpue_scope) || identical(result$data_kind, "public-wcpfc"))
   if (public && grepl("^cpue", job)) {
-    cat("**Scope:** ", record$data_source$cpue_scope, "; aggregate records without vessel effects or confidence intervals.\n\n", sep = "")
+    # Source coverage can extend beyond this run's saved annual series.
+    scope <- sub("[[:space:]]*[,;]?[[:space:]]*[0-9]{4}[[:space:]]*[–—-][[:space:]]*[0-9]{4}[[:space:]]*$",
+                 "", record$data_source$cpue_scope)
+    rows <- result$series
+    if (!report_has(rows, "year")) rows <- unlist(rows, recursive = FALSE, use.names = FALSE)
+    years <- report_years(rows)
+    scope <- c(scope, years)
+    cat("**Scope:** ", paste(scope[nzchar(scope)], collapse = ", "),
+        "; aggregate records without vessel effects or confidence intervals.\n\n", sep = "")
   } else if (public && grepl("^mse", job)) {
     cat("**Scope:** these illustrative trials use simplified fitted cases and errors; trial fractions are not calibrated management risks.\n\n")
   } else if (public && grepl("^(assessment|prepare)", job)) {
@@ -332,7 +340,9 @@ report_scope <- function(job, result, record) {
 report_record <- function(record) {
   report_inputs(record)
   cat("---\n\n")
-  links <- c("[Data and full record](report-data.json)")
+  links <- if (knitr::is_html_output()) {
+    c("[Saved results](report-data.json)", "[Run record](record.json)")
+  } else "Saved files: `report-data.json` · `record.json`"
   for (field in c("analysis_source", "source")) {
     source <- record[[field]]
     if (!is.null(source$repository) && !is.null(source$commit)) {
