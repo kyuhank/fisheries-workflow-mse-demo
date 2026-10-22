@@ -62,16 +62,19 @@ command_output <- function(command, args = character()) {
   output
 }
 
+# All declared jobs in this component use the same installed-package inventory.
+runtime_info_scope <- "component_environment"
+
 runtime_info <- function(job = NULL) {
   require_container()
   packages <- c("jsonlite", "stats")
-  if (!is.null(job) && grepl("^assessment_[ab][12]$", job)) packages <- c(packages, "RTMB", "TMB")
   versions <- setNames(lapply(packages, function(package) {
     if (!requireNamespace(package, quietly = TRUE)) stop(package, " is required")
     as.character(utils::packageVersion(package))
   }), packages)
   quarto <- Sys.which("quarto")
-  list(schema_version = 1L, r = as.character(getRversion()), r_platform = R.version$platform,
+  list(schema_version = 1L, scope = runtime_info_scope,
+       r = as.character(getRversion()), r_platform = R.version$platform,
        packages = versions, quarto = if (nzchar(quarto)) {
          paste(command_output(quarto, "--version"), collapse = "\n")
        } else NULL)
