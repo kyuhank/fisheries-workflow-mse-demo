@@ -15,15 +15,19 @@ they do not show that a rule would be safe without it. Cases and scenarios have
 equal comparison weight, rather than estimated probabilities. The example
 provides no calibrated risk estimates or real-fishery advice.
 
-Run through the coordinator in its recorded container, for example:
+Run a supplied context with host R (jsonlite), Make and Docker:
 
 ```sh
-make job JOB=mse_index
+make runtime JOB=mse_prepare
+make run JOB=mse_prepare CONTEXT="$PWD/examples/context.json" OUT=/absolute/new-result
 ```
 
-Each job receives a named `context`; its entry point is not standalone. See
-`jobs/*/README.md` for input connections. The report reads saved results without
-rerunning trials and keeps detailed metrics, assumptions and source records.
+The repository's Makefile launches the job in its selected image. Numerical code is
+in [R/mse.R](R/mse.R) and [jobs/](jobs/README.md). `response.json` contains the
+result and declared workflow effects; runtime and execution JSON files identify
+the image and software actually used. See the [job guide](jobs/README.md) for
+input fields and rendering saved results. The small synthetic example illustrates
+the adapter interface; use recorded upstream outputs for an actual workflow.
 
 [SOURCE.json](SOURCE.json) records the calculation library's baseline origin and
 SHA-256. The R library and calculation entry points retain those source bytes;

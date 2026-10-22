@@ -15,5 +15,23 @@
     "sha256": "da8b6531e0a89950c49617e2a7b6dd485e698bab7bdef06e64632a700ef7c956",
     "baseline_path": "workflow/r/mse.R",
     "baseline_lines": "all"
-  }
+  },
+  "dependencies": [
+    {
+      "path": "R/common.R",
+      "repository": "https://github.com/kyuhank/fisheries-workflow-demo",
+      "commit": "0182140326a748a5eae848e9a1e7e568d65bc337",
+      "source_path": "workflow/r/common.R",
+      "sha256": "4befb1217f341840864249e30182819e3452c685dd30267c0f6bb7f3870b912d"
+    },
+    {
+      "path": "R/assessment-recurrence.R",
+      "repository": "https://github.com/kyuhank/fisheries-workflow-assessment-demo",
+      "commit": "0e29121cd0807fb8e058025529c10670befaf702",
+      "source_path": "R/assessment.R",
+      "source_lines": "1-9",
+      "source_sha256": "c807989ab5de3da1d4ac44cd7e11d84b2eee5d112c2ea74b481f896457abdf06",
+      "sha256": "86bb7635ba7b98c885bfba7ccda9d7364445268dd2dfba9253612345c5dc724e"
+    }
+  ]
 }

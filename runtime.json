@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "default": {
+    "image": "ghcr.io/pacificcommunity/fisheries-workflow@sha256:9dea950a713b87daad728517138bcb664a151f0f5b44a1d5370623734a5bca9d",
+    "platform": "linux/amd64",
+    "package_url": "https://github.com/PacificCommunity/ofp-sam-docker-images/pkgs/container/fisheries-workflow"
+  },
+  "jobs": {}
+}
+

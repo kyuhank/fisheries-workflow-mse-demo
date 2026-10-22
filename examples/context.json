@@ -1,0 +1,104 @@
+{
+  "key": "mse_prepare",
+  "settings": {},
+  "job_settings": {},
+  "run_id": "standalone-example",
+  "parents": {
+    "assessment_a1": {
+      "K": 1000,
+      "r": 0.25,
+      "q": 0.001,
+      "next_biomass_t": 1000,
+      "boundary_fit": false,
+      "series": [
+        {
+          "year": 2020,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2021,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2022,
+          "observed_index": 1,
+          "catch_t": 0
+        }
+      ]
+    },
+    "assessment_a2": {
+      "K": 1000,
+      "r": 0.4,
+      "q": 0.001,
+      "next_biomass_t": 1000,
+      "boundary_fit": false,
+      "series": [
+        {
+          "year": 2020,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2021,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2022,
+          "observed_index": 1,
+          "catch_t": 0
+        }
+      ]
+    },
+    "assessment_b1": {
+      "K": 1000,
+      "r": 0.25,
+      "q": 0.001,
+      "next_biomass_t": 1000,
+      "boundary_fit": false,
+      "series": [
+        {
+          "year": 2020,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2021,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2022,
+          "observed_index": 1,
+          "catch_t": 0
+        }
+      ]
+    },
+    "assessment_b2": {
+      "K": 1000,
+      "r": 0.4,
+      "q": 0.001,
+      "next_biomass_t": 1000,
+      "boundary_fit": false,
+      "series": [
+        {
+          "year": 2020,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2021,
+          "observed_index": 1,
+          "catch_t": 0
+        },
+        {
+          "year": 2022,
+          "observed_index": 1,
+          "catch_t": 0
+        }
+      ]
+    }
+  }
+}
