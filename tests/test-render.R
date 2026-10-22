@@ -54,11 +54,16 @@ count <- length(plots)
 invisible(render("cpue_summary", cpue))
 stopifnot(length(plots) == count + 1L)
 count <- length(plots)
-invisible(render("cpue_report", cpue))
+cpue_text <- render("cpue_report", cpue)
 stopifnot(length(plots) == count + 3L,
-  identical(unname(plots[[count + 1L]]$series), unname(plots[[count + 2L]]$series)),
-  identical(names(plots[[count + 1L]]$series), c("A Standardised", "A Nominal")),
-  identical(names(plots[[count + 2L]]$series), c("B Standardised", "B Nominal")))
+  identical(plots[[count + 1L]]$series[[1]], plots[[count + 2L]]$series[[1]]),
+  identical(plots[[count + 1L]]$series[[2]], plots[[count + 2L]]$series[[2]]),
+  identical(names(plots[[count + 1L]]$series), c("Standardised", "Nominal")),
+  identical(names(plots[[count + 2L]]$series), c("Standardised", "Nominal")),
+  identical(attr(plots[[count + 1L]]$series, "panel_title"), "Analysis A"),
+  identical(attr(plots[[count + 2L]]$series, "panel_title"), "Analysis B"),
+  !grepl("Score error", cpue_text, fixed = TRUE), !grepl("score error", cpue_text, fixed = TRUE),
+  grepl("Yes", cpue_text, fixed = TRUE))
 relative <- lapply(rows, function(row) row[c("year", "index")])
 stopifnot(grepl("relative indices only", render("cpue_a", list(series = relative)), fixed = TRUE))
 
@@ -68,7 +73,7 @@ invisible(render("submission", list(sets = observations)))
 stopifnot(grepl("returned and replaced", render("qc", list(returned = list("S1"),
   checks = list(list(check = "Positive effort", result = "Pass")))), fixed = TRUE))
 invisible(render("database", list(rows = 3L, first_year = 2001, last_year = 2003, annual = rows)))
-invisible(render("extract", list(sets = observations, catch = rows)))
+stopifnot(grepl("# Extracted data", render("extract", list(sets = observations, catch = rows)), fixed = TRUE))
 for (job in c("prepare_a", "prepare_b")) invisible(render(job, list(rows = rows)))
 stopifnot(length(plots) == count)
 fit <- list(series = rows, r = 0.2, K = 500, q = 0.01, convergence = 0,
@@ -117,6 +122,10 @@ record$data_source <- list(provider = "Fixture provider", cpue_scope = "Fiji fle
   sources = list(list(url = "https://www.wcpfc.int/fixture")))
 stopifnot(grepl("absent/suppressed", render("cpue_a", c(list(series = rows), analysis)), fixed = TRUE),
           grepl("stock-wide catches", render("assessment_report", assessment_result), fixed = TRUE))
+footer_record <- record
+footer_record$run_id <- "Run 002"
+footer <- paste(capture.output(report_record(footer_record)), collapse = "\n")
+stopifnot(grepl("Run `002`", footer, fixed = TRUE), !grepl("Run `Run ", footer, fixed = TRUE))
 grDevices::dev.off()
 stopifnot(file.info(figure)$size > 1000)
 unlink(figure)

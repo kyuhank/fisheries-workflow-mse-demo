@@ -9,6 +9,8 @@ report_scalar <- function(value) {
 }
 
 report_table <- function(rows, columns = NULL, limit = NULL) {
+  # Keep a preceding knitr figure outside the Markdown table.
+  cat("\n\n")
   if (!length(rows)) { cat("No saved rows are available.\n\n"); return(invisible(NULL)) }
   if (is.null(columns)) {
     fields <- unique(unlist(lapply(rows, names)))
@@ -40,6 +42,7 @@ report_has <- function(rows, field) {
 }
 
 report_plot <- function(series, field, label, points = character(), upper = NULL) {
+  panel_title <- attr(series, "panel_title")
   valid <- vapply(series, function(rows) report_has(rows, "year") && report_has(rows, field), logical(1))
   series <- series[valid]
   if (!length(series)) { cat("No saved values are available for this plot.\n\n"); return(invisible(NULL)) }
@@ -56,13 +59,24 @@ report_plot <- function(series, field, label, points = character(), upper = NULL
   colours[named] <- fixed[names(series)[named]]
   line_types <- ifelse(grepl("Nominal", names(series), fixed = TRUE), 2, 1)
   symbols <- ifelse(grepl("Nominal", names(series), fixed = TRUE), 1, 16)
-  old <- par(mar = c(3.7, 4.4, 3.1, 0.7), mgp = c(2.8, 0.7, 0), las = 1, cex = 0.88)
+  margins <- if (!is.null(panel_title)) c(3.7, 4.6, 3.9, 1.6) else c(3.7, 4.4, 3.1, 0.7)
+  old <- par(mar = margins, mgp = c(2.8, 0.7, 0), las = 1, cex = 0.88)
   on.exit(par(old))
   bounds <- range(c(0, values, upper), finite = TRUE)
   if (diff(bounds) == 0) bounds <- bounds + c(0, 1)
   years <- range(years)
   if (diff(years) == 0) years <- years + c(-0.5, 0.5)
-  plot(years, bounds, type = "n", xlab = "Year", ylab = label)
+  plot(years, bounds, type = "n", xlab = "Year", ylab = label,
+       xaxt = if (is.null(panel_title)) "s" else "n")
+  if (!is.null(panel_title)) {
+    first_tick <- 5 * ceiling(years[1] / 5)
+    last_tick <- 5 * floor(years[2] / 5)
+    ticks <- if (first_tick <= last_tick) seq(first_tick, last_tick, by = 5) else
+      unique(round(pretty(years, n = 3)))
+    ticks <- ticks[ticks >= years[1] & ticks <= years[2]]
+    axis(1, at = ticks, labels = ticks)
+    mtext(panel_title, side = 3, line = 2.9, cex = 0.95, font = 2)
+  }
   abline(h = axTicks(2), col = "#e4e9ee", lwd = 0.8)
   for (i in seq_along(series)) {
     rows <- series[[i]]
@@ -113,11 +127,14 @@ report_rate_series <- function(rows) {
 report_rate_plot <- function(rows, label = NULL) {
   if (report_has(rows, "standardised_cpue") && report_has(rows, "nominal_cpue")) {
     rates <- report_rate_series(rows)
-    if (!is.null(label)) names(rates) <- paste(sub("Analysis ", "", label, fixed = TRUE), c("Standardised", "Nominal"))
+    if (!is.null(label)) {
+      names(rates) <- c("Standardised", "Nominal")
+      attr(rates, "panel_title") <- label
+    }
     report_plot(rates, "cpue", "Fish per 1,000 hooks")
   } else {
     report_plot(setNames(list(rows), if (is.null(label)) "Saved index" else label), "index", "Relative CPUE")
-    cat("Saved relative indices only; absolute rates are unavailable.\n\n")
+    cat("\n\nSaved relative indices only; absolute rates are unavailable.\n\n")
   }
 }
 
@@ -126,17 +143,17 @@ report_cpue_checks <- function(analyses) {
     x <- analyses[[i]]
     list(analysis = sub("CPUE analysis ", "", names(analyses)[i], fixed = TRUE),
       used = x$sets_used, excluded = x$sets_excluded, min_hooks = x$min_hooks,
-      converged = x$converged, dispersion = x$dispersion,
-      score = if (!is.null(x$score_residual)) format(x$score_residual, scientific = TRUE, digits = 2) else NULL)
+      converged = if (is.null(x$converged)) NULL else if (isTRUE(x$converged)) "Yes" else "No",
+      dispersion = x$dispersion)
   })
-  columns <- c(analysis = "Analysis", used = "Rows", excluded = "Excluded", min_hooks = "Min. hooks",
-               converged = "Converged", dispersion = "Dispersion", score = "Score error")
+  columns <- c(analysis = "Analysis", used = "Rows", excluded = "Excluded", min_hooks = "Min hooks",
+               converged = "Converged", dispersion = "Dispersion")
   columns <- columns[vapply(names(columns), function(field) any(vapply(rows, function(row) !is.null(row[[field]]), logical(1))), logical(1))]
   report_table(rows, columns)
 }
 
 report_cpue_note <- function(analyses, record) {
-  cat("Nominal = 1,000 × annual fish / annual hooks, using the same selected records as each standardised curve. ")
+  cat("\n\nNominal = 1,000 × annual fish / annual hooks, using the same selected records as each standardised curve. ")
   methods <- unique(unlist(lapply(analyses, `[[`, "method")))
   if (length(methods)) cat(paste(methods, collapse = "; "), ". ", sep = "")
   targets <- unique(unlist(lapply(analyses, `[[`, "standardisation")))
@@ -254,7 +271,7 @@ report_record <- function(record) {
     label <- paste0("Image ", substr(digest, 1, 12))
     links <- c(links, if (!is.null(image_url)) paste0("[", label, "](", image_url, ")") else label)
   }
-  if (!is.null(record$run_id)) cat("Run `", record$run_id, "`. ", sep = "")
+  if (!is.null(record$run_id)) cat("Run `", sub("^Run[[:space:]]+", "", record$run_id), "`. ", sep = "")
   cat(paste(links, collapse = " · "), ".\n\n", sep = "")
   sources <- record$data_source$sources
   if (length(sources)) {
@@ -269,7 +286,7 @@ report_record <- function(record) {
 
 report_result_view <- function(job, result, record) {
   titles <- c(submission = "Submitted data", qc = "Data checks", database = "Saved database",
-    extract = "Analysis extract", cpue_a = "CPUE A", cpue_b = "CPUE B", cpue_summary = "CPUE comparison",
+    extract = "Extracted data", cpue_a = "CPUE A", cpue_b = "CPUE B", cpue_summary = "CPUE comparison",
     prepare_a = "Assessment inputs A", prepare_b = "Assessment inputs B", assessment_a1 = "Assessment A1",
     assessment_a2 = "Assessment A2", assessment_b1 = "Assessment B1", assessment_b2 = "Assessment B2",
     assessment_summary = "Assessment comparison", mse_prepare = "Management trial inputs",
@@ -336,7 +353,7 @@ report_full_view <- function(job, result, record) {
     cat("## Relative indices\n\n")
     report_plot(result$series, "index", "CPUE relative to first year")
     report_cpue_checks(result$analyses)
-    cat("Each index is scaled to its own first year (= 1). Dispersion is Pearson variance / residual df; score error checks the fitted catch totals.\n\n")
+    cat("Each index is scaled to its own first year (= 1). Dispersion is the Pearson residual sum of squares / residual df.\n\n")
     report_scope("cpue_report", result, record)
   } else if (job == "assessment_report") {
     cat("# Surplus-production assessment\n\n")

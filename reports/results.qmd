@@ -3,7 +3,9 @@ lang: en-NZ
 keep-md: true
 format:
   html:
+    minimal: true
     embed-resources: true
+    fig-format: svg
     toc: false
     theme: none
   typst:
